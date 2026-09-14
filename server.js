@@ -101,8 +101,7 @@ app.delete('/api/products/:id', (req, res) => {
 
 // Front-End SPA Integration
 app.get('*', (req, res) => {
-    res.send(`
-<!DOCTYPE html>
+    res.send(`<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -302,11 +301,11 @@ app.get('*', (req, res) => {
     </div>
 
     <script>
-        let allProducts = [];
-        let cart = [];
-        let currentLang = 'en';
+        var allProducts = [];
+        var cart = [];
+        var currentLang = 'en';
 
-        const i18n = {
+        var i18n = {
             en: {
                 langBtn: "العربية 🌐",
                 cartTitle: "Cart",
@@ -363,7 +362,7 @@ app.get('*', (req, res) => {
         }
 
         function updateUI() {
-            const t = i18n[currentLang];
+            var t = i18n[currentLang];
             document.getElementById('lang-btn').innerText = t.langBtn;
             document.getElementById('cart-title-text').innerText = t.cartTitle;
             document.getElementById('hero-title').innerHTML = t.heroTitle;
@@ -386,8 +385,8 @@ app.get('*', (req, res) => {
 
         async function fetchProducts() {
             try {
-                const res = await fetch('/api/products');
-                const json = await res.json();
+                var res = await fetch('/api/products');
+                var json = await res.json();
                 if(json.success) {
                     allProducts = json.data;
                     renderProducts(allProducts);
@@ -399,28 +398,27 @@ app.get('*', (req, res) => {
         }
 
         function renderProducts(items) {
-            const grid = document.getElementById('product-grid');
-            const t = i18n[currentLang];
+            var grid = document.getElementById('product-grid');
+            var t = i18n[currentLang];
             if(!items.length) {
-                grid.innerHTML = \`<p style='color: var(--text-muted); text-align:center;'>\${t.cartEmpty}</p>\`;
+                grid.innerHTML = "<p style='color: var(--text-muted); text-align:center;'>" + t.cartEmpty + "</p>";
                 return;
             }
-            grid.innerHTML = items.map(p => \`
-                <div class="card">
-                    <img src="\${p.image}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80'">
-                    <div class="card-body">
-                        <div>
-                            <span class="card-category">\${p.category}</span>
-                            <h4 class="card-title">\${p.name}</h4>
-                        </div>
-                        <div>
-                            <div class="card-price">\$\${p.price}</div>
-                            <button onclick="addToCart('\${p.id}')" class="btn-add">\${t.addCart}</button>
-                        </div>
-                    </div>
-                </div>
-            \`).join('');
+            grid.innerHTML = items.map(function(p) {
+                return '<div class="card">' +
+                    '<img src="' + p.image + '" class="card-img" onerror="this.src=\\'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80\\'" />' +
+                    '<div class="card-body">' +
+                        '<div>' +
+                            '<span class="card-category">' + p.category + '</span>' +
+                            '<h4 class="card-title">' + p.name + '</h4>' +
+                        '</div>' +
+                        '<div>' +
+                            '<div class="card-price">$' + p.price + '</div>' +
+                            '<button onclick="addToCart(\\\'' + p.id + '\\\')" class="btn-add">' + t.addCart + '</button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
         }
 
-        function filterCat(cat, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.r
+        function filterCat(cat,
