@@ -1,9 +1,7 @@
 /**
  * ============================================================================
- * DRONEZONE FULL-STACK PLATFORM (Node.js + Express + Embedded UI)
+ * DRONEZONE - MULTI-LANGUAGE ULTRA PREMIUM PLATFORM
  * ============================================================================
- * Architecture: REST API Back-End + Modern Responsive Single Page Application (SPA)
- * Compatible with Mobile Browsers, Local Node Runtime & Cloud Hosting (Render/Railway)
  */
 
 const express = require('express');
@@ -13,13 +11,11 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'products_db.json');
-const ADMIN_TOKEN = "admin123"; // Secret password for API write operations
+const ADMIN_TOKEN = "admin123";
 
-// Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Default Database Seeding
 const initialProducts = [
     {
         id: "1689000000001",
@@ -47,7 +43,6 @@ const initialProducts = [
     }
 ];
 
-// Helper Functions for Persistence
 function readDatabase() {
     if (!fs.existsSync(DATA_FILE)) {
         fs.writeFileSync(DATA_FILE, JSON.stringify(initialProducts, null, 2));
@@ -65,28 +60,19 @@ function writeDatabase(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// ============================================================================
-// BACK-END RESTful API ENDPOINTS
-// ============================================================================
-
-// Get all products
+// RESTful API
 app.get('/api/products', (req, res) => {
-    const products = readDatabase();
-    res.json({ success: true, count: products.length, data: products });
+    res.json({ success: true, data: readDatabase() });
 });
 
-// Add new product (Protected)
 app.post('/api/products', (req, res) => {
     const { authKey, name, category, price, image, description } = req.body;
-
     if (authKey !== ADMIN_TOKEN) {
-        return res.status(401).json({ success: false, message: "Unauthorized: Invalid Admin Token" });
+        return res.status(401).json({ success: false, message: "Invalid Security Key!" });
     }
-
     if (!name || !price || !image) {
-        return res.status(400).json({ success: false, message: "Missing required fields" });
+        return res.status(400).json({ success: false, message: "Please fill all required fields." });
     }
-
     const products = readDatabase();
     const newProduct = {
         id: Date.now().toString(),
@@ -94,39 +80,26 @@ app.post('/api/products', (req, res) => {
         category: category || "parts",
         price: parseFloat(price),
         image,
-        description: description || "Professional grade drone hardware component."
+        description: description || "High performance drone gear."
     };
-
     products.unshift(newProduct);
     writeDatabase(products);
-
     res.status(201).json({ success: true, message: "Product added successfully", data: newProduct });
 });
 
-// Delete product (Protected)
 app.delete('/api/products/:id', (req, res) => {
     const { authKey } = req.body;
     const { id } = req.params;
-
     if (authKey !== ADMIN_TOKEN) {
-        return res.status(401).json({ success: false, message: "Unauthorized: Invalid Admin Token" });
+        return res.status(401).json({ success: false, message: "Invalid Security Key!" });
     }
-
     let products = readDatabase();
     const filtered = products.filter(p => p.id !== id);
-
-    if (products.length === filtered.length) {
-        return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
     writeDatabase(filtered);
     res.json({ success: true, message: "Product deleted successfully" });
 });
 
-// ============================================================================
-// FRONT-END SINGLE PAGE APPLICATION (UI / HTML + CSS + JS)
-// ============================================================================
-
+// Front-End SPA Integration
 app.get('*', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -134,178 +107,196 @@ app.get('*', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DroneZone | Pro Aerial Systems & Hardware</title>
+    <title>DroneZone | Professional Drone Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #070a13;
-            --bg-card: #0f172a;
-            --bg-glass: rgba(15, 23, 42, 0.9);
-            --border: #1e293b;
-            --primary: #38bdf8;
-            --primary-hover: #0284c7;
+            --bg-body: #090d16;
+            --bg-card: rgba(21, 30, 49, 0.7);
+            --bg-glass: rgba(13, 19, 33, 0.85);
+            --primary: #00f2fe;
+            --primary-hover: #4facfe;
             --accent: #6366f1;
             --danger: #ef4444;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 10px 30px -10px rgba(0, 242, 254, 0.25);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; scroll-behavior: smooth; }
-        body { background-color: var(--bg-dark); color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Cairo', sans-serif; transition: direction 0.3s; }
+        body { background: var(--bg-body); color: var(--text-main); line-height: 1.6; overflow-x: hidden; min-height: 100vh; }
 
+        /* Header */
         header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: var(--bg-glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border); padding: 14px 5%;
+            background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 14px 6%;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .logo { font-size: 1.4rem; font-weight: 900; color: #fff; text-decoration: none; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px; }
         .logo span { color: var(--primary); }
 
-        nav { display: flex; gap: 20px; }
-        nav a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
-        nav a:hover { color: var(--primary); }
+        .nav-actions { display: flex; align-items: center; gap: 12px; }
+
+        .btn-lang {
+            background: rgba(255, 255, 255, 0.08); color: var(--primary); border: 1px solid var(--border);
+            padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .btn-lang:hover { background: var(--primary); color: #000; }
 
         .cart-trigger {
-            background: #1e293b; border: 1px solid var(--border); color: #fff;
-            padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; position: relative;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #000; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800;
+            cursor: pointer; position: relative; display: flex; align-items: center; gap: 8px;
+            box-shadow: var(--shadow); transition: transform 0.2s;
         }
+        .cart-trigger:active { transform: scale(0.95); }
         .cart-badge {
-            position: absolute; top: -6px; right: -6px; background: var(--primary); color: #000;
-            border-radius: 50%; width: 20px; height: 20px; font-size: 0.75rem; font-weight: 900;
-            display: flex; align-items: center; justify-content: center;
+            background: #000; color: #fff; border-radius: 50%; width: 22px; height: 22px;
+            font-size: 0.75rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
         }
 
+        /* Hero Section */
         .hero {
-            padding: 140px 5% 60px 5%; text-align: center;
-            background: radial-gradient(circle at 50% 20%, #1e293b 0%, var(--bg-dark) 70%);
+            padding: 130px 6% 40px 6%; text-align: center;
+            background: radial-gradient(circle at 50% 10%, rgba(0, 242, 254, 0.12) 0%, transparent 60%);
         }
-        .hero h1 { font-size: 2.8rem; font-weight: 900; margin-bottom: 16px; }
+        .hero h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 10px; line-height: 1.2; }
         .hero h1 span { color: var(--primary); }
-        .hero p { color: var(--text-muted); max-width: 600px; margin: 0 auto 24px auto; }
+        .hero p { color: var(--text-muted); font-size: 0.95rem; max-width: 500px; margin: 0 auto; }
 
-        .btn-main {
-            background: var(--primary); color: #000; font-weight: 800; padding: 12px 24px;
-            border-radius: 10px; text-decoration: none; display: inline-block; border: none; cursor: pointer; transition: 0.2s;
-        }
-        .btn-main:hover { background: var(--primary-hover); color: #fff; }
+        /* Container */
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px 6% 80px 6%; }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 40px 5%; }
-        .sec-title { text-align: center; margin-bottom: 30px; }
-        .sec-title h2 { font-size: 1.8rem; font-weight: 800; }
-
-        .filter-bar { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        /* Filter Bar */
+        .filter-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
         .filter-btn {
-            background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border);
-            padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
+            background: rgba(255, 255, 255, 0.04); color: var(--text-muted); border: 1px solid var(--border);
+            padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 700; transition: 0.3s;
         }
-        .filter-btn.active { background: var(--primary); color: #000; font-weight: 800; }
+        .filter-btn.active, .filter-btn:hover { background: var(--primary); color: #000; border-color: var(--primary); }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        /* Product Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
         .card {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px;
             overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(10px); transition: transform 0.3s, border-color 0.3s;
         }
-        .card-img { width: 100%; height: 180px; object-fit: cover; background: #000; }
-        .card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .card-price { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin: 10px 0; }
+        .card:hover { transform: translateY(-5px); border-color: rgba(0, 242, 254, 0.4); }
+        .card-img { width: 100%; height: 200px; object-fit: cover; background: #000; }
+        .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-category { font-size: 0.75rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin: 6px 0 12px 0; color: #fff; }
+        .card-price { font-size: 1.4rem; font-weight: 900; color: #fff; margin-bottom: 14px; }
+        .btn-add {
+            background: rgba(255, 255, 255, 0.08); color: #fff; border: 1px solid var(--border);
+            padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%;
+            transition: 0.3s; text-align: center;
+        }
+        .btn-add:hover { background: var(--primary); color: #000; border-color: var(--primary); }
 
-        .admin-box {
-            background: #0b1329; border: 2px dashed var(--primary); border-radius: 16px;
-            padding: 24px; margin-top: 50px;
-        }
-        .form-control {
-            width: 100%; background: var(--bg-dark); border: 1px solid var(--border); color: #fff;
-            padding: 10px; border-radius: 8px; margin-bottom: 12px; font-size: 0.9rem; outline: none;
-        }
-
+        /* Cart Drawer */
         .cart-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             z-index: 200; display: none; justify-content: flex-end;
         }
         .cart-drawer {
-            width: 100%; max-width: 380px; background: var(--bg-card); height: 100%;
-            padding: 20px; display: flex; flex-direction: column; justify-content: space-between;
+            width: 100%; max-width: 400px; background: #0d1322; height: 100%;
+            padding: 24px; display: flex; flex-direction: column; justify-content: space-between;
+            border-left: 1px solid var(--border);
+        }
+        html[dir="rtl"] .cart-drawer { border-left: none; border-right: 1px solid var(--border); }
+        .btn-whatsapp {
+            background: #25d366; color: #fff; font-weight: 800; padding: 14px;
+            border-radius: 12px; border: none; cursor: pointer; width: 100%; font-size: 1rem;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
-        @media (max-width: 600px) {
-            nav { display: none; }
-            .hero h1 { font-size: 2rem; }
+        /* Hidden Admin Panel */
+        .admin-trigger {
+            text-align: center; margin-top: 60px; color: var(--text-muted); font-size: 0.85rem;
+            cursor: pointer; opacity: 0.5; transition: opacity 0.2s;
         }
+        .admin-trigger:hover { opacity: 1; color: var(--primary); }
+        .admin-box {
+            display: none; background: #0b111e; border: 1px solid var(--primary); border-radius: 20px;
+            padding: 24px; margin-top: 30px; animation: fadeIn 0.4s ease;
+        }
+        .form-control {
+            width: 100%; background: #05080f; border: 1px solid var(--border); color: #fff;
+            padding: 12px; border-radius: 10px; margin-bottom: 12px; font-size: 0.9rem; outline: none;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <header>
         <a href="#" class="logo">✈ DRONE<span>ZONE</span></a>
-        <nav>
-            <a href="#shop">Store</a>
-            <a href="#admin">Admin API</a>
-        </nav>
-        <button class="cart-trigger" onclick="toggleCart()">
-            🛒 <span id="cart-count" class="cart-badge">0</span>
-        </button>
+        <div class="nav-actions">
+            <button class="btn-lang" onclick="toggleLanguage()" id="lang-btn">العربية 🌐</button>
+            <button class="cart-trigger" onclick="toggleCart()">
+                🛒 <span id="cart-title-text">Cart</span> <span id="cart-count" class="cart-badge">0</span>
+            </button>
+        </div>
     </header>
 
     <section class="hero">
-        <h1>Next-Gen <span>Aerial Systems</span></h1>
-        <p>Enterprise Full-Stack Store & High-Speed FPV Component Management.</p>
-        <a href="#shop" class="btn-main">Browse Inventory ↓</a>
+        <h1 id="hero-title">Professional <span>Drone Systems</span></h1>
+        <p id="hero-desc">Discover high-performance FPV drones, precision motors, and premium gear.</p>
     </section>
 
-    <section id="shop" class="container">
-        <div class="sec-title">
-            <h2>Hardware Inventory</h2>
-        </div>
-
+    <section class="container">
         <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterCat('all', this)">All</button>
-            <button class="filter-btn" onclick="filterCat('drones', this)">RTF Drones</button>
-            <button class="filter-btn" onclick="filterCat('motors', this)">Motors</button>
-            <button class="filter-btn" onclick="filterCat('parts', this)">Parts</button>
+            <button class="filter-btn active" onclick="filterCat('all', this)" id="cat-all">All Products</button>
+            <button class="filter-btn" onclick="filterCat('drones', this)" id="cat-drones">RTF Drones</button>
+            <button class="filter-btn" onclick="filterCat('motors', this)" id="cat-motors">Motors</button>
+            <button class="filter-btn" onclick="filterCat('parts', this)" id="cat-parts">Spare Parts</button>
         </div>
 
-        <div id="product-grid" class="grid">Loading Back-End Data...</div>
+        <div id="product-grid" class="grid">Loading products...</div>
 
-        <!-- FULL BACK-END ADMIN INTEGRATION -->
-        <div id="admin" class="admin-box">
-            <h3 style="color: var(--primary); margin-bottom: 14px;">🔒 Full-Stack Back-End Admin Panel</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-                إضافة وحذف المنتجات عبر الاتصال المباشر بـ REST API الخاص بالخادم.
-            </p>
+        <!-- Hidden Admin Activation Button -->
+        <div class="admin-trigger" onclick="activateAdmin()" id="admin-trigger-text">🔒 Admin Control Panel</div>
+
+        <!-- Hidden Admin Panel -->
+        <div id="admin-panel" class="admin-box">
+            <h3 style="color: var(--primary); margin-bottom: 14px;" id="admin-heading">🛠️ Store Admin Panel</h3>
             <form onsubmit="handleApiAdd(event)">
-                <input type="password" id="api-key" class="form-control" placeholder="Admin Security Key (Default: admin123)" required>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
-                    <input type="text" id="api-name" class="form-control" placeholder="Product Name" required>
-                    <select id="api-cat" class="form-control">
-                        <option value="drones">RTF Drones</option>
-                        <option value="motors">Motors</option>
-                        <option value="parts">Parts</option>
-                    </select>
-                    <input type="number" id="api-price" class="form-control" placeholder="Price ($)" required>
-                    <input type="url" id="api-img" class="form-control" placeholder="Image URL" required>
-                </div>
-                <button type="submit" class="btn-main" style="width: 100%; margin-top: 8px;">+ Push to Back-End Server</button>
+                <input type="password" id="api-key" class="form-control" value="admin123" placeholder="Security Key" required>
+                <input type="text" id="api-name" class="form-control" placeholder="Product Original Name (English)" required>
+                <select id="api-cat" class="form-control">
+                    <option value="drones">RTF Drones</option>
+                    <option value="motors">Motors</option>
+                    <option value="parts">Spare Parts</option>
+                </select>
+                <input type="number" id="api-price" class="form-control" placeholder="Price ($)" required>
+                <input type="url" id="api-img" class="form-control" placeholder="Product Image URL" required>
+                <button type="submit" class="btn-add" style="background: var(--primary); color:#000; font-weight:800; margin-top:8px;" id="admin-add-btn">+ Add Product</button>
             </form>
             <div id="admin-items-list" style="margin-top: 20px;"></div>
         </div>
     </section>
 
-    <!-- CART MODAL -->
+    <!-- Cart Drawer Modal -->
     <div id="cart-modal" class="cart-overlay">
         <div class="cart-drawer">
             <div>
                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-                    <h3>Cart Summary</h3>
-                    <button onclick="toggleCart()" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;">✕</button>
+                    <h3 style="color: #fff;" id="cart-drawer-title">Shopping Cart</h3>
+                    <button onclick="toggleCart()" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;">✕</button>
                 </div>
-                <div id="cart-list" style="margin-top: 16px;"></div>
+                <div id="cart-list" style="margin-top: 20px;"></div>
             </div>
             <div>
-                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; margin-bottom: 12px;">
-                    <span>Total:</span>
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.2rem; margin-bottom: 16px;">
+                    <span id="cart-total-label">Total:</span>
                     <span id="cart-total" style="color: var(--primary);">$0</span>
                 </div>
-                <button onclick="checkoutWhatsApp()" class="btn-main" style="width: 100%;">Checkout via WhatsApp 📲</button>
+                <button onclick="checkoutWhatsApp()" class="btn-whatsapp" id="btn-wa-text">Checkout via WhatsApp 📲</button>
             </div>
         </div>
     </div>
@@ -313,6 +304,85 @@ app.get('*', (req, res) => {
     <script>
         let allProducts = [];
         let cart = [];
+        let currentLang = 'en';
+
+        const i18n = {
+            en: {
+                langBtn: "العربية 🌐",
+                cartTitle: "Cart",
+                heroTitle: 'Professional <span>Drone Systems</span>',
+                heroDesc: "Discover high-performance FPV drones, precision motors, and premium gear.",
+                catAll: "All Products",
+                catDrones: "RTF Drones",
+                catMotors: "Motors",
+                catParts: "Spare Parts",
+                addCart: "Add to Cart 🛒",
+                cartDrawerTitle: "Shopping Cart",
+                cartEmpty: "Your cart is currently empty.",
+                cartTotalLabel: "Total:",
+                btnWa: "Checkout via WhatsApp 📲",
+                adminTrigger: "🔒 Admin Control Panel",
+                adminHeading: "🛠️ Store Admin Panel",
+                adminAddBtn: "+ Add Product",
+                deleteBtn: "Delete",
+                askPass: "Enter Admin Password:",
+                wrongPass: "Incorrect Password!",
+                addedSuccess: "Product added successfully!",
+                deletedSuccess: "Product deleted successfully!"
+            },
+            ar: {
+                langBtn: "English 🌐",
+                cartTitle: "السلة",
+                heroTitle: 'أنظمة وطائرات <span>الدرون الاحترافية</span>',
+                heroDesc: "اكتشف أفضل قطع ومعدات الدرون بأعلى جودة وأفضل الأسعار.",
+                catAll: "الكل",
+                catDrones: "طائرات كاملة",
+                catMotors: "محركات",
+                catParts: "قطع غيار",
+                addCart: "إضافة إلى السلة 🛒",
+                cartDrawerTitle: "سلة التسوق",
+                cartEmpty: "السلة فارغة حالياً.",
+                cartTotalLabel: "المجموع الإجمالي:",
+                btnWa: "طلب عبر WhatsApp 📲",
+                adminTrigger: "🔒 لوحة التحكم بالمتجر",
+                adminHeading: "🛠️ لوحة إدارة المتجر",
+                adminAddBtn: "+ إضافة للمتجر",
+                deleteBtn: "حذف",
+                askPass: "أدخل كلمة السر الخاصة بإدارة المتجر:",
+                wrongPass: "كلمة السر غير صحيحة!",
+                addedSuccess: "تمت إضافة المنتج بنجاح!",
+                deletedSuccess: "تم الحذف بنجاح!"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            document.documentElement.lang = currentLang;
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            updateUI();
+        }
+
+        function updateUI() {
+            const t = i18n[currentLang];
+            document.getElementById('lang-btn').innerText = t.langBtn;
+            document.getElementById('cart-title-text').innerText = t.cartTitle;
+            document.getElementById('hero-title').innerHTML = t.heroTitle;
+            document.getElementById('hero-desc').innerText = t.heroDesc;
+            document.getElementById('cat-all').innerText = t.catAll;
+            document.getElementById('cat-drones').innerText = t.catDrones;
+            document.getElementById('cat-motors').innerText = t.catMotors;
+            document.getElementById('cat-parts').innerText = t.catParts;
+            document.getElementById('cart-drawer-title').innerText = t.cartDrawerTitle;
+            document.getElementById('cart-total-label').innerText = t.cartTotalLabel;
+            document.getElementById('btn-wa-text').innerText = t.btnWa;
+            document.getElementById('admin-trigger-text').innerText = t.adminTrigger;
+            document.getElementById('admin-heading').innerText = t.adminHeading;
+            document.getElementById('admin-add-btn').innerText = t.adminAddBtn;
+            
+            renderProducts(allProducts);
+            updateCart();
+            renderAdminList(allProducts);
+        }
 
         async function fetchProducts() {
             try {
@@ -324,14 +394,15 @@ app.get('*', (req, res) => {
                     renderAdminList(allProducts);
                 }
             } catch(e) {
-                document.getElementById('product-grid').innerHTML = "<p style='color:red;'>Failed to connect to Back-End server.</p>";
+                document.getElementById('product-grid').innerHTML = "<p style='color:red;'>Failed to load products.</p>";
             }
         }
 
         function renderProducts(items) {
             const grid = document.getElementById('product-grid');
+            const t = i18n[currentLang];
             if(!items.length) {
-                grid.innerHTML = "<p style='color: var(--text-muted);'>No products found.</p>";
+                grid.innerHTML = \`<p style='color: var(--text-muted); text-align:center;'>\${t.cartEmpty}</p>\`;
                 return;
             }
             grid.innerHTML = items.map(p => \`
@@ -339,12 +410,12 @@ app.get('*', (req, res) => {
                     <img src="\${p.image}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80'">
                     <div class="card-body">
                         <div>
-                            <span style="font-size:0.7rem; color:var(--primary); font-weight:800; text-transform:uppercase;">\${p.category}</span>
-                            <h4 style="font-size:1rem; margin-top:4px;">\${p.name}</h4>
+                            <span class="card-category">\${p.category}</span>
+                            <h4 class="card-title">\${p.name}</h4>
                         </div>
                         <div>
                             <div class="card-price">\$\${p.price}</div>
-                            <button onclick="addToCart('\${p.id}')" class="btn-main" style="width:100%; padding:8px; font-size:0.85rem;">+ Add To Cart</button>
+                            <button onclick="addToCart('\${p.id}')" class="btn-add">\${t.addCart}</button>
                         </div>
                     </div>
                 </div>
@@ -352,115 +423,4 @@ app.get('*', (req, res) => {
         }
 
         function filterCat(cat, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if(cat === 'all') renderProducts(allProducts);
-            else renderProducts(allProducts.filter(p => p.category === cat));
-        }
-
-        function addToCart(id) {
-            const prod = allProducts.find(p => p.id === id);
-            const exist = cart.find(c => c.id === id);
-            if(exist) exist.qty++;
-            else cart.push({ ...prod, qty: 1 });
-            updateCart();
-            toggleCart(true);
-        }
-
-        function updateCart() {
-            const count = cart.reduce((s, i) => s + i.qty, 0);
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            document.getElementById('cart-count').innerText = count;
-            document.getElementById('cart-total').innerText = '$' + total;
-
-            const list = document.getElementById('cart-list');
-            if(!cart.length) list.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>Cart is empty.</p>";
-            else list.innerHTML = cart.map(i => \`
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
-                    <div>
-                        <div style="font-weight:700;">\${i.name}</div>
-                        <div style="font-size:0.8rem; color:var(--primary);">\$\${i.price} x \${i.qty}</div>
-                    </div>
-                </div>
-            \`).join('');
-        }
-
-        function toggleCart(open) {
-            const m = document.getElementById('cart-modal');
-            m.style.display = (open || m.style.display !== 'flex') ? 'flex' : 'none';
-        }
-
-        function checkoutWhatsApp() {
-            if(!cart.length) return alert('السلة فارغة!');
-            let txt = "طلب جديد من المتجر:\\n";
-            cart.forEach(i => txt += \`- \${i.name} (\${i.qty}) = $\${i.price * i.qty}\\n\`);
-            window.open(\`https://wa.me/?text=\${encodeURIComponent(txt)}\`, '_blank');
-        }
-
-        async function handleApiAdd(e) {
-            e.preventDefault();
-            const payload = {
-                authKey: document.getElementById('api-key').value,
-                name: document.getElementById('api-name').value,
-                category: document.getElementById('api-cat').value,
-                price: document.getElementById('api-price').value,
-                image: document.getElementById('api-img').value
-            };
-
-            const res = await fetch('/api/products', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const json = await res.json();
-            if(json.success) {
-                alert('تمت الإضافة بنجاح للـ Back-End!');
-                fetchProducts();
-            } else {
-                alert('خطأ: ' + json.message);
-            }
-        }
-
-        async function deleteProductApi(id) {
-            const authKey = prompt("أدخل رمز الإدارة للحذف:");
-            if(!authKey) return;
-
-            const res = await fetch('/api/products/' + id, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ authKey })
-            });
-
-            const json = await res.json();
-            if(json.success) {
-                alert('تم الحذف!');
-                fetchProducts();
-            } else {
-                alert('خطأ: ' + json.message);
-            }
-        }
-
-        function renderAdminList(items) {
-            document.getElementById('admin-items-list').innerHTML = items.map(p => \`
-                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-dark); padding:8px 12px; margin-bottom:6px; border-radius:6px;">
-                    <span style="font-size:0.85rem;">\${p.name} ($\${p.price})</span>
-                    <button onclick="deleteProductApi('\${p.id}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">حذف</button>
-                </div>
-            \`).join('');
-        }
-
-        fetchProducts();
-    </script>
-</body>
-</html>
-    `);
-});
-
-// Start Full-Stack Application
-app.listen(PORT, () => {
-    console.log(`====================================================`);
-    console.log(`🚀 DroneZone Full-Stack Server Running on Port ${PORT}`);
-    console.log(`🌐 Local Web Access: http://localhost:${PORT}`);
-    console.log(`====================================================`);
-});
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.r
